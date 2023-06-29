@@ -1,0 +1,9 @@
+pandas
+numpy
+pyyaml
+matplotlib
+seaborn
+scikit-learn
+pycaret
+tensorflow==2.11
+tqdm
