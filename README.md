@@ -2,10 +2,6 @@
 
 This repo contains the data science assignment, pipeline, and results for predicting the class of a particular type of search term used in an industrial manufacturing supplier search.  
 
-## Presentation
-
-The associated powerpoint discussing the results of this analysis is located at [this link](https://1drv.ms/p/s!AoRUcDqpQEBqoaFQIIPH0FGw688tmw?e=4PEe4v).
-
 ## File Structure
 
 ___
