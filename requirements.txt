@@ -1,5 +1,4 @@
 pandas
-numpy
 pyyaml
 matplotlib
 seaborn
@@ -7,3 +6,7 @@ scikit-learn
 pycaret
 tensorflow==2.11
 tqdm
+ydata-profiling # pandas-profiling
+modin[all]
+nltk
+xgboost
