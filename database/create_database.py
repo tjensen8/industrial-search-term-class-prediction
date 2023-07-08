@@ -3,9 +3,13 @@ Uploads Grainger data to sqlite for more efficient data processing.
 """
 import sqlite3 as sql
 import argparse
-import csv
+import pandas as pd
 from tqdm import tqdm
-from typing import List, AnyStr
+import logging
+
+logging.basicConfig(
+    filename="/home/programming/dsa-g/create_db.log", level=logging.INFO, filemode="w"
+)
 
 
 def make_db(loc: str, table_name: str) -> sql.connect:
@@ -18,44 +22,33 @@ def make_db(loc: str, table_name: str) -> sql.connect:
 
     # drop the table info
     c.execute(f"""DROP TABLE IF EXISTS {table_name}""")
+    logging.info(f"Dropped table {table_name} from database located at {loc}")
 
     # create the table if it doesn't exist
     c.execute(
         f"""CREATE TABLE IF NOT EXISTS {table_name} (search_term TEXT, class TEXT);"""
     )
+    logging.info(f"Recreated {table_name} in database located at {loc}")
+
     c.close()
     return conn
 
 
-def extract_data_from_file(
-    loc: str, delimeter: str = "\t", columns: List[AnyStr] = ["search_term", "class"]
-) -> csv.reader:
-    # returns a csv reader to be run line by line
-    # with open(loc, "r") as f:
-    f = open(loc, "r")
-    # reader = csv.DictReader(f, delimiter=delimeter)
-    reader = csv.reader(f, delimiter=delimeter)
-    return reader, f
-
-
 def upload_data_to_db(
-    reader: csv.reader, conn: sql.connect, table_name: str, file: open
+    conn: sql.connect, table_name: str, loc: str, delimeter="\t", chunksize=5000
 ) -> bool:
     table_name = str(table_name).upper()
 
-    # iterates lines by line and uploads data to database
-    c = conn.cursor()
-    iters = len(list(reader))
-    for row in tqdm(reader, total=iters):
-        c.execute(
-            f"""
-        
-        INSERT INTO "{table_name}" values ("{row[0]}", "{row[1]}")
-        
-        """
-        )
-    c.close()
-    file.close()
+    # chunk large file for upload to database
+    logging.info(f"Reading in file located at {loc}")
+    chunks = pd.read_csv(loc, delimiter="\t", chunksize=chunksize, header=None)
+    n_chunks = round(sum(1 for row in open(loc, "r")) / chunksize)
+    logging.info(f"Number of Chunks Found: {n_chunks}")
+    for chunk_num, chunk in enumerate(chunks):
+        logging.info(f"Processing pandas chunk: {chunk_num} / {n_chunks}")
+        # iteratively add the chunks to the database
+        chunk.rename(columns={0: "search_term", 1: "class"}, inplace=True)
+        chunk.to_sql(table_name, con=conn, if_exists="append", index=False)
 
     return True
 
@@ -87,10 +80,12 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     conn = make_db(args.db, args.table)
-    reader, file = extract_data_from_file(args.r)
-    resp = upload_data_to_db(reader, conn, args.table, file)
+    logging.info("Database created.")
+    resp = upload_data_to_db(conn, args.table, args.r)
 
     if resp:
         print("Data uploaded successfully.")
+        logging.info(f"Data uploaded successfully to database at {args.db}")
     else:
         print("[!Error] Data Not Uploaded Successfully")
+        logging.error("Data Not Uploaded Successfully")
