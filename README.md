@@ -1,6 +1,6 @@
-# Data Science Assignment
+# Industrial Search Term Relevance
 
-This repo contains the data science assignment, pipeline, and results for predicting the class of a particular type of search term used in an industrial manufacturing supplier search.  
+This repo contains the pipeline and results for predicting the class of a particular type of search term used in an industrial manufacturing supplier search.  
 
 ## File Structure
 
